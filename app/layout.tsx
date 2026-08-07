@@ -78,6 +78,14 @@ export default function RootLayout({
         "font-sans"
       )}
     >
+      <head>
+        {/* Google AdSense (keywordegg 와 동일 계정) */}
+        <script
+          async
+          crossOrigin="anonymous"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9130836798889522"
+        />
+      </head>
       <body>
         {/* 사이트 전역 구조화 데이터 — 모든 페이지에 실린다 */}
         <JsonLd data={siteJsonLd()} />

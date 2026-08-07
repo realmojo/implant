@@ -12,9 +12,15 @@ import {
   Sun,
 } from "lucide-react"
 
+import { AdSense } from "@/components/adsense"
+import { AD_SLOTS } from "@/lib/adsense"
 import { JsonLd } from "@/components/json-ld"
 import { breadcrumbJsonLd, clinicCrumbs, dentistJsonLd } from "@/lib/jsonld"
-import { getClinicBySlug, type ClinicWithSlug } from "@/lib/supabase"
+import {
+  getClinicBySlug,
+  getNearbyClinics,
+  type ClinicWithSlug,
+} from "@/lib/supabase"
 
 export const revalidate = 3600
 
@@ -134,6 +140,8 @@ export default async function ClinicPage({
 
   if (!clinic) notFound()
 
+  const nearby = await getNearbyClinics(clinic)
+
   const hasBadges =
     clinic.open_night ||
     clinic.open_sunday ||
@@ -148,6 +156,9 @@ export default async function ClinicPage({
 
       <div className="border-b border-border bg-background">
         <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-10">
+          {/* 최상단 — 제목보다 위 */}
+          <AdSense slot={AD_SLOTS.top} className="mb-6" />
+
           <nav aria-label="위치" className="text-xs text-muted-foreground">
             <ol className="flex flex-wrap items-center gap-1">
               <li>
@@ -230,6 +241,9 @@ export default async function ClinicPage({
               </a>
             ) : null}
           </div>
+
+          {/* 중간 — 전화번호 아래 */}
+          <AdSense slot={AD_SLOTS.middle} className="mt-6" />
         </div>
       </div>
 
@@ -277,11 +291,82 @@ export default async function ClinicPage({
           </section>
         ) : null}
 
+        {/* 하단 — 태그 아래 */}
+        <AdSense slot={AD_SLOTS.bottom} />
+
+        {nearby.length > 0 ? (
+          <section>
+            <h2 className="mb-1 text-lg font-bold tracking-tight">
+              {clinic.sigungu}의 다른 임플란트 치과
+            </h2>
+            <p className="mb-4 text-sm text-muted-foreground">
+              같은 지역에서 함께 비교해 보세요.
+            </p>
+
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {nearby.map((c) => {
+                const weekday = formatHours(c.hours?.["월요일"])
+
+                return (
+                  <li key={c.id}>
+                    <Link
+                      href={`/${c.slug}`}
+                      className="group flex h-full flex-col gap-2 rounded-xl border border-border bg-background p-4 transition-all outline-none hover:border-primary hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="font-semibold text-foreground group-hover:text-primary">
+                          {c.name}
+                        </span>
+                        <ChevronRight className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                      </div>
+
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <MapPin className="size-3.5 shrink-0" />
+                        {c.dong}
+                      </span>
+
+                      <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-1 text-xs">
+                        {c.open_night ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary">
+                            <Moon className="size-3" />
+                            야간
+                          </span>
+                        ) : null}
+                        {c.open_sunday ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary">
+                            <Sun className="size-3" />
+                            일요일
+                          </span>
+                        ) : null}
+                        {c.open_holiday ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary">
+                            <CalendarDays className="size-3" />
+                            공휴일
+                          </span>
+                        ) : null}
+                        {weekday ? (
+                          <span className="text-muted-foreground tabular-nums">
+                            평일 {weekday}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            진료시간 정보 없음
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        ) : null}
+
         <Link
           href={regionHref}
           className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-5 py-2.5 text-sm font-medium transition-colors hover:border-primary hover:text-primary"
         >
-          {clinic.sigungu} 임플란트치과 전체 보기
+          {clinic.sigungu} 임플란트 치과 전체 보기
           <ChevronRight className="size-4" />
         </Link>
       </div>

@@ -215,6 +215,30 @@ export async function getClinicsByDong(
   return clinics.filter((c) => baseDong(c.dong) === dong)
 }
 
+/**
+ * 같은 지역의 다른 치과. 같은 읍면동을 먼저, 그다음 같은 시군구에서 채운다.
+ * 정보가 있는 곳(전화·진료시간)과 야간·주말 진료하는 곳을 앞에 둔다.
+ */
+export async function getNearbyClinics(
+  clinic: ClinicWithSlug,
+  limit = 6
+): Promise<ClinicWithSlug[]> {
+  const all = await getClinicsBySigungu(clinic.sido, clinic.sigungu)
+  const dong = baseDong(clinic.dong)
+
+  const score = (c: ClinicWithSlug) =>
+    (baseDong(c.dong) === dong ? 8 : 0) +
+    (c.phone ? 2 : 0) +
+    (Object.keys(c.hours ?? {}).length > 0 ? 2 : 0) +
+    (c.open_night ? 1 : 0) +
+    (c.open_sunday || c.open_holiday ? 1 : 0)
+
+  return all
+    .filter((c) => c.id !== clinic.id)
+    .sort((a, b) => score(b) - score(a) || a.name.localeCompare(b.name, "ko"))
+    .slice(0, limit)
+}
+
 /** 등록된 치과 총 개수 (사이트맵 분할 계산용) */
 export async function getClinicCount(): Promise<number> {
   const { count, error } = await supabase
