@@ -25,7 +25,12 @@ export function absoluteUrl(path = "/") {
     .map((seg) => (seg ? encodeURIComponent(decodeURIComponent(seg)) : seg))
     .join("/")
 
-  return `${SITE_URL}${encoded.startsWith("/") ? "" : "/"}${encoded}${hash}`
+  // 끝의 슬래시는 떼어낸다. 루트는 https://example.com 형태가 된다.
+  // 다만 프래그먼트가 붙는 식별자(/#website)는 관례대로 슬래시를 남긴다.
+  const trimmed = encoded.length > 1 ? encoded.replace(/\/+$/, "") : encoded
+  const normalized = trimmed === "/" && !hash ? "" : trimmed
+
+  return `${SITE_URL}${normalized.startsWith("/") || !normalized ? "" : "/"}${normalized}${hash}`
 }
 
 export function regionPath(sido: string, sigungu: string) {
