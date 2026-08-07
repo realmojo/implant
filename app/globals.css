@@ -2,11 +2,20 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/*
+ * 이 사이트는 라이트 테마만 쓴다.
+ * 그래도 이 변형은 남겨둬야 한다. 지우면 shadcn 컴포넌트에 남아 있는 `dark:`
+ * 유틸리티가 Tailwind 기본값인 prefers-color-scheme 로 되돌아가, 시스템을
+ * 다크로 쓰는 사용자에게만 색이 깨진다. `.dark` 클래스는 어디서도 붙이지 않으므로
+ * 아래 변형은 영원히 매칭되지 않는다.
+ */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
     --font-heading: var(--font-sans);
     --font-sans: var(--font-sans);
+    --font-display: var(--font-display);
+    --font-mono: var(--font-mono);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,6 +57,7 @@
 }
 
 :root {
+    color-scheme: light;
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
@@ -82,40 +92,6 @@
     --sidebar-ring: oklch(0.708 0 0);
 }
 
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.432 0.095 166.913);
-    --primary-foreground: oklch(0.979 0.021 166.113);
-    --secondary: oklch(0.274 0.006 286.033);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.432 0.095 166.913);
-    --accent-foreground: oklch(0.979 0.021 166.113);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.696 0.17 162.48);
-    --sidebar-primary-foreground: oklch(0.262 0.051 172.552);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -125,5 +101,107 @@
     }
   html {
     @apply font-sans;
+    }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   임상 기록부(dossier) 스타일 — 인쇄된 의료 정보지의 조판 언어.
+   --radius 가 0 이라 시스템 전체가 직각이다. 이를 컨셉으로 삼아
+   괘선 · 점선 리더 · 큰 세리프 숫자로 지면 같은 위계를 만든다.
+   ────────────────────────────────────────────────────────────── */
+
+/* 종이 질감: 미세한 그레인 + 상단에서 번지는 잉크 얼룩 */
+.dossier-paper {
+    position: relative;
+    isolation: isolate;
+    background-color: color-mix(in oklab, var(--background) 97%, var(--primary));
+}
+
+.dossier-paper::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+        radial-gradient(
+            60rem 32rem at 12% -8%,
+            color-mix(in oklab, var(--primary) 14%, transparent),
+            transparent 70%
+        ),
+        radial-gradient(
+            42rem 26rem at 100% 0%,
+            color-mix(in oklab, var(--primary) 8%, transparent),
+            transparent 72%
+        );
+}
+
+/* 조판용 그레인 — 배경 위에 아주 옅게 얹어 단색 면을 깨뜨린다 */
+.dossier-grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.32;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+/* 색인 항목의 점선 리더 (…… 로 이어지는 목차 조판) */
+.dossier-leader {
+    flex: 1 1 auto;
+    min-width: 1.5rem;
+    align-self: end;
+    height: 0.75em;
+    border-bottom: 1px dotted
+        color-mix(in oklab, var(--foreground) 32%, transparent);
+}
+
+/* 좌측 눈금자 — 섹션 번호를 다는 얇은 세로 괘선 */
+.dossier-rule {
+    border-top: 1px solid color-mix(in oklab, var(--foreground) 18%, transparent);
+}
+
+.dossier-hairline {
+    border-top: 1px solid color-mix(in oklab, var(--foreground) 10%, transparent);
+}
+
+/* 로드 시 한 번의 계단식 등장 — 산발적 마이크로 인터랙션 대신 */
+@keyframes dossier-rise {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes dossier-wipe {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
+}
+
+.dossier-reveal {
+    animation: dossier-rise 0.75s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--delay, 0ms);
+}
+
+.dossier-wipe {
+    transform-origin: left;
+    animation: dossier-wipe 0.9s cubic-bezier(0.65, 0, 0.35, 1) both;
+    animation-delay: var(--delay, 0ms);
+}
+
+/* 정보 탐색이 목적인 사이트다. 모션 최소화 설정을 그대로 존중한다. */
+@media (prefers-reduced-motion: reduce) {
+    .dossier-reveal,
+    .dossier-wipe {
+        animation: none;
     }
 }
