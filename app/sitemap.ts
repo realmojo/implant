@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next"
 
 import { absoluteUrl } from "@/lib/site"
-import { CLINICS_PER_SITEMAP } from "@/lib/sitemap"
 import {
   getAllDongCounts,
   getClinicCount,
@@ -12,25 +11,28 @@ import {
   type OpenFeature,
 } from "@/lib/supabase"
 
+export const revalidate = 3600
+
 const FEATURES = Object.keys(OPEN_FEATURES) as OpenFeature[]
 
 /**
- * 0번은 고정·지역 페이지, 1번부터는 치과 상세 URL 묶음.
- * 결과는 /sitemap/0.xml, /sitemap/1.xml … 로 나온다.
+ * 전체 URL 을 /sitemap.xml 하나에 담는다.
+ *
+ * 치과 상세까지 합쳐 2만여 개로, 구글 상한(50,000개 · 50MB) 안에 들어간다.
+ * generateSitemaps 로 쪼개면 /sitemap.xml 인덱스가 생기지 않아
+ * 검색엔진에 등록할 대표 주소가 없어진다.
  */
-export async function generateSitemaps() {
-  const count = await getClinicCount()
-  const clinicSitemaps = Math.ceil(count / CLINICS_PER_SITEMAP)
-  return Array.from({ length: clinicSitemaps + 1 }, (_, id) => ({ id }))
-}
-
-async function staticAndRegionUrls(): Promise<MetadataRoute.Sitemap> {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date()
-  const [groups, dongs, ...featureGroups] = await Promise.all([
+
+  const [groups, dongs, clinicCount, ...featureGroups] = await Promise.all([
     getSigunguCountsBySido(),
     getAllDongCounts(),
+    getClinicCount(),
     ...FEATURES.map((f) => getFeatureCountsBySido(f)),
   ])
+
+  const slugs = await getClinicSlugRange(0, clinicCount)
 
   const entry = (
     path: string,
@@ -56,32 +58,9 @@ async function staticAndRegionUrls(): Promise<MetadataRoute.Sitemap> {
     ),
 
     // 읍면동 목록 — "문래동 임플란트" 같은 검색어를 받는 페이지
-    ...dongs.map((d) =>
-      entry(`/regions/${d.sido}/${d.sigungu}/${d.dong}`, 0.6)
-    ),
+    ...dongs.map((d) => entry(`/regions/${d.sido}/${d.sigungu}/${d.dong}`, 0.6)),
+
+    // 치과 상세
+    ...slugs.map((slug) => entry(`/${slug}`, 0.5, "monthly")),
   ]
-}
-
-export default async function sitemap({
-  id,
-}: {
-  // 이 버전에서는 id 가 Promise 로 넘어온다. await 하지 않으면 NaN 이 되어 빈 사이트맵이 나온다.
-  id: Promise<string> | string | number
-}): Promise<MetadataRoute.Sitemap> {
-  const index = Number(await id)
-
-  if (index === 0) return staticAndRegionUrls()
-
-  const slugs = await getClinicSlugRange(
-    (index - 1) * CLINICS_PER_SITEMAP,
-    CLINICS_PER_SITEMAP
-  )
-  const lastModified = new Date()
-
-  return slugs.map((slug) => ({
-    url: absoluteUrl(`/${slug}`),
-    lastModified,
-    changeFrequency: "monthly" as const,
-    priority: 0.5,
-  }))
 }
