@@ -40,6 +40,3 @@ next-env.d.ts
 /.wrangler/
 cloudflare-env.d.ts
 !.env.example
-
-# 스크랩 원본 데이터 (16MB, build.py 로 재생성 가능 · Supabase 에 적재 완료)
-clinics.json
