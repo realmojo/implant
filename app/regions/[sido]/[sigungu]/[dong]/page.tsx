@@ -3,6 +3,8 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ChevronRight } from "lucide-react"
 
+import { AdBanner } from "@/components/adsense"
+import { AD_SLOTS } from "@/lib/adsense"
 import { ClinicList } from "@/components/clinic-list"
 import { JsonLd } from "@/components/json-ld"
 import { breadcrumbJsonLd, collectionPageJsonLd } from "@/lib/jsonld"
@@ -67,7 +69,7 @@ export default async function DongPage({
   const path = `${sigunguHref}/${encodeURIComponent(dong)}`
 
   return (
-    <main className="min-h-svh bg-muted/30">
+    <>
       <JsonLd
         data={collectionPageJsonLd({
           path,
@@ -84,68 +86,76 @@ export default async function DongPage({
           { name: dong, path },
         ])}
       />
-      <div className="border-b border-border bg-background">
-        <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-          <nav aria-label="위치" className="text-xs text-muted-foreground">
-            <ol className="flex flex-wrap items-center gap-1">
-              <li>
-                <Link href="/" className="hover:text-primary">
-                  홈
-                </Link>
-              </li>
-              <ChevronRight className="size-3" aria-hidden />
-              <li>
-                <Link href="/regions" className="hover:text-primary">
-                  지역별 임플란트치과
-                </Link>
-              </li>
-              <ChevronRight className="size-3" aria-hidden />
-              <li>
-                <Link
-                  href={`/regions/${encodeURIComponent(sido)}`}
-                  className="hover:text-primary"
-                >
-                  {sido}
-                </Link>
-              </li>
-              <ChevronRight className="size-3" aria-hidden />
-              <li>
-                <Link href={sigunguHref} className="hover:text-primary">
-                  {sigungu}
-                </Link>
-              </li>
-              <ChevronRight className="size-3" aria-hidden />
-              <li aria-current="page" className="font-medium text-foreground">
-                {dong}
-              </li>
-            </ol>
-          </nav>
 
-          <h1 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">
-            {dong} <span className="text-primary">임플란트 치과</span>
-          </h1>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            {sido} {sigungu} {dong}에 있는 임플란트 치과{" "}
-            <strong className="font-semibold text-foreground">
-              {clinics.length.toLocaleString("ko-KR")}곳
-            </strong>
-            입니다. {shortDong(dong)} 임플란트 치과를 찾고 있다면 아래 목록에서
-            진료시간과 야간·주말 진료 여부를 확인해 보세요.
-          </p>
+      <main className="min-h-svh bg-muted/30">
+        <div className="border-b border-border bg-background">
+          <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+            <nav aria-label="위치" className="text-xs text-muted-foreground">
+              <ol className="flex flex-wrap items-center gap-1">
+                <li>
+                  <Link href="/" className="hover:text-primary">
+                    홈
+                  </Link>
+                </li>
+                <ChevronRight className="size-3" aria-hidden />
+                <li>
+                  <Link href="/regions" className="hover:text-primary">
+                    지역별 임플란트치과
+                  </Link>
+                </li>
+                <ChevronRight className="size-3" aria-hidden />
+                <li>
+                  <Link
+                    href={`/regions/${encodeURIComponent(sido)}`}
+                    className="hover:text-primary"
+                  >
+                    {sido}
+                  </Link>
+                </li>
+                <ChevronRight className="size-3" aria-hidden />
+                <li>
+                  <Link href={sigunguHref} className="hover:text-primary">
+                    {sigungu}
+                  </Link>
+                </li>
+                <ChevronRight className="size-3" aria-hidden />
+                <li aria-current="page" className="font-medium text-foreground">
+                  {dong}
+                </li>
+              </ol>
+            </nav>
 
-          <Link
-            href={sigunguHref}
-            className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-          >
-            {sigungu} 전체 보기
-            <ChevronRight className="size-4" />
-          </Link>
+            <h1 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">
+              {dong} <span className="text-primary">임플란트 치과</span>
+            </h1>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {sido} {sigungu} {dong}에 있는 임플란트 치과{" "}
+              <strong className="font-semibold text-foreground">
+                {clinics.length.toLocaleString("ko-KR")}곳
+              </strong>
+              입니다. {shortDong(dong)} 임플란트 치과를 찾고 있다면 아래
+              목록에서 진료시간과 야간·주말 진료 여부를 확인해 보세요.
+            </p>
+
+            <Link
+              href={sigunguHref}
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+            >
+              {sigungu} 전체 보기
+              <ChevronRight className="size-4" />
+            </Link>
+          </div>
         </div>
-      </div>
 
-      <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
-        <ClinicList clinics={clinics} />
-      </div>
-    </main>
+        <AdBanner slot={AD_SLOTS.top} className="pt-8" />
+
+        <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
+
+          <ClinicList clinics={clinics} />
+        </div>
+        <AdBanner slot={AD_SLOTS.bottom} className="pb-10" />
+
+      </main>
+    </>
   )
 }

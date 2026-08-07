@@ -2,6 +2,8 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ChevronRight } from "lucide-react"
 
+import { AdBanner } from "@/components/adsense"
+import { AD_SLOTS } from "@/lib/adsense"
 import { JsonLd } from "@/components/json-ld"
 import { RegionGrid, SidoJumpNav } from "@/components/region-grid"
 import { breadcrumbJsonLd, indexPageJsonLd } from "@/lib/jsonld"
@@ -25,7 +27,11 @@ const FEATURE_META = {
   },
 } as const satisfies Record<
   OpenFeature,
-  { title: string; countKey: "night_cnt" | "holiday_cnt" | "sunday_cnt"; lead: string }
+  {
+    title: string
+    countKey: "night_cnt" | "holiday_cnt" | "sunday_cnt"
+    lead: string
+  }
 >
 
 /**
@@ -55,7 +61,7 @@ export async function FeaturePage({
   const pageName = sido ? `${sido} ${rootName}` : rootName
 
   return (
-    <main className="min-h-svh bg-muted/30">
+    <>
       <JsonLd
         data={indexPageJsonLd({
           path,
@@ -80,71 +86,86 @@ export async function FeaturePage({
               ]
         )}
       />
-      <div className="border-b border-border bg-background">
-        <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
-          {sido ? (
-            <nav aria-label="위치" className="mb-4 text-xs text-muted-foreground">
-              <ol className="flex flex-wrap items-center gap-1">
-                <li>
-                  <Link href="/" className="hover:text-primary">
-                    홈
-                  </Link>
-                </li>
-                <ChevronRight className="size-3" aria-hidden />
-                <li>
-                  <Link href={`/${feature}`} className="hover:text-primary">
-                    {meta.title} 임플란트치과
-                  </Link>
-                </li>
-                <ChevronRight className="size-3" aria-hidden />
-                <li aria-current="page" className="font-medium text-foreground">
-                  {sido}
-                </li>
-              </ol>
-            </nav>
-          ) : null}
 
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            {sido ? `${sido} ` : ""}
-            <span className="text-primary">{meta.title}</span> 임플란트치과
-          </h1>
-          <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            {meta.lead}
-          </p>
+      <main className="min-h-svh bg-muted/30">
+        <div className="border-b border-border bg-background">
+          <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+            {sido ? (
+              <nav
+                aria-label="위치"
+                className="mb-4 text-xs text-muted-foreground"
+              >
+                <ol className="flex flex-wrap items-center gap-1">
+                  <li>
+                    <Link href="/" className="hover:text-primary">
+                      홈
+                    </Link>
+                  </li>
+                  <ChevronRight className="size-3" aria-hidden />
+                  <li>
+                    <Link href={`/${feature}`} className="hover:text-primary">
+                      {meta.title} 임플란트치과
+                    </Link>
+                  </li>
+                  <ChevronRight className="size-3" aria-hidden />
+                  <li
+                    aria-current="page"
+                    className="font-medium text-foreground"
+                  >
+                    {sido}
+                  </li>
+                </ol>
+              </nav>
+            ) : null}
 
-          <dl className="mt-8 grid max-w-lg grid-cols-3 gap-px overflow-hidden rounded-2xl border border-border bg-border">
-            {[
-              { label: "시도", value: groups.length },
-              { label: "시군구", value: sigunguTotal },
-              { label: `${meta.title} 치과`, value: total },
-            ].map((stat) => (
-              <div key={stat.label} className="bg-background px-4 py-4">
-                <dt className="text-xs text-muted-foreground">{stat.label}</dt>
-                <dd className="mt-1 text-xl font-bold tracking-tight tabular-nums">
-                  {stat.value.toLocaleString("ko-KR")}
-                </dd>
-              </div>
-            ))}
-          </dl>
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              {sido ? `${sido} ` : ""}
+              <span className="text-primary">{meta.title}</span> 임플란트치과
+            </h1>
+            <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
+              {meta.lead}
+            </p>
 
-          <p className="mt-4 text-sm text-muted-foreground">
-            시군구를 선택하면 {meta.title} 조건이 적용된 목록이 바로 열립니다.
-          </p>
+            <dl className="mt-8 grid max-w-lg grid-cols-3 gap-px overflow-hidden rounded-2xl border border-border bg-border">
+              {[
+                { label: "시도", value: groups.length },
+                { label: "시군구", value: sigunguTotal },
+                { label: `${meta.title} 치과`, value: total },
+              ].map((stat) => (
+                <div key={stat.label} className="bg-background px-4 py-4">
+                  <dt className="text-xs text-muted-foreground">
+                    {stat.label}
+                  </dt>
+                  <dd className="mt-1 text-xl font-bold tracking-tight tabular-nums">
+                    {stat.value.toLocaleString("ko-KR")}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+
+            <p className="mt-4 text-sm text-muted-foreground">
+              시군구를 선택하면 {meta.title} 조건이 적용된 목록이 바로 열립니다.
+            </p>
+          </div>
         </div>
-      </div>
 
-      <SidoJumpNav
-        groups={allGroups}
-        basePath={`/${feature}`}
-        activeSido={sido}
-      />
-      <RegionGrid
-        groups={groups}
-        countKey={meta.countKey}
-        filterParam={feature}
-        basePath={sido ? undefined : `/${feature}`}
-      />
-    </main>
+        <AdBanner slot={AD_SLOTS.top} className="pt-8" />
+
+        <SidoJumpNav
+          groups={allGroups}
+          basePath={`/${feature}`}
+          activeSido={sido}
+        />
+        <RegionGrid
+          groups={groups}
+          countKey={meta.countKey}
+          filterParam={feature}
+          basePath={sido ? undefined : `/${feature}`}
+        />
+        <AdBanner slot={AD_SLOTS.bottom} className="pb-10" />
+
+      </main>
+    </>
   )
 }
 

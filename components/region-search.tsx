@@ -31,8 +31,7 @@ export function RegionSearch({ regions }: { regions: RegionEntry[] }) {
     if (!q) return []
     return regions
       .filter(
-        (r) =>
-          r.sigungu.replace(/\s+/g, "").includes(q) || r.sido.startsWith(q)
+        (r) => r.sigungu.replace(/\s+/g, "").includes(q) || r.sido.startsWith(q)
       )
       .slice(0, MAX_RESULTS)
   }, [regions, query])
@@ -83,7 +82,10 @@ export function RegionSearch({ regions }: { regions: RegionEntry[] }) {
             </li>
           ) : (
             results.map((r) => (
-              <li key={`${r.sido}-${r.sigungu}`} className="dossier-hairline first:border-t-0">
+              <li
+                key={`${r.sido}-${r.sigungu}`}
+                className="dossier-hairline first:border-t-0"
+              >
                 <Link
                   href={regionHref(r)}
                   className="flex items-baseline gap-3 px-5 py-3 outline-none hover:bg-muted focus-visible:bg-muted"

@@ -103,9 +103,7 @@ export function SiteHeader() {
                     onClick={() => setOpen(false)}
                     className={cn(
                       "block rounded-md px-2 py-3 text-sm font-medium transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-                      active
-                        ? "text-primary"
-                        : "text-foreground hover:bg-muted"
+                      active ? "text-primary" : "text-foreground hover:bg-muted"
                     )}
                   >
                     {item.label}

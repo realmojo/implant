@@ -1,8 +1,10 @@
 import Link from "next/link"
 import { ArrowRight, CalendarDays, Moon, Sun } from "lucide-react"
 
+import { AdBanner } from "@/components/adsense"
 import { NowStrip } from "@/components/now-strip"
 import { RegionSearch } from "@/components/region-search"
+import { AD_SLOTS } from "@/lib/adsense"
 import { getDongCount, getSigunguCountsBySido } from "@/lib/supabase"
 
 /** 집계는 자주 바뀌지 않으므로 1시간 단위로 재생성 */
@@ -159,10 +161,14 @@ export default async function Page() {
         </div>
       </section>
 
+      <AdBanner slot={AD_SLOTS.middle} className="pb-16 sm:pb-20" />
+
       {/* ───────────── 진료 조건 ───────────── */}
       <section className="mx-auto w-full max-w-6xl px-4 pb-20 sm:px-6 sm:pb-24">
         <div className="flex items-baseline gap-4">
-          <span className="font-mono text-xs text-primary tabular-nums">01</span>
+          <span className="font-mono text-xs text-primary tabular-nums">
+            01
+          </span>
           <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
             조건으로 좁히기
           </h2>
@@ -206,7 +212,9 @@ export default async function Page() {
       {/* ───────────── 등록이 많은 시군구 ───────────── */}
       <section className="mx-auto w-full max-w-6xl px-4 pb-20 sm:px-6 sm:pb-24">
         <div className="flex items-baseline gap-4">
-          <span className="font-mono text-xs text-primary tabular-nums">02</span>
+          <span className="font-mono text-xs text-primary tabular-nums">
+            02
+          </span>
           <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
             등록이 많은 시군구
           </h2>
@@ -277,6 +285,8 @@ export default async function Page() {
           ))}
         </ol>
       </section>
+
+      <AdBanner slot={AD_SLOTS.bottom} className="pb-16" />
 
       {/* ───────────── 데이터 기준 ───────────── */}
       <section className="dossier-rule mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">

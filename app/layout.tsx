@@ -79,6 +79,9 @@ export default function RootLayout({
       )}
     >
       <head>
+        {/* 사이트 전역 구조화 데이터 — 모든 페이지의 <head> 에 실린다 */}
+        <JsonLd data={siteJsonLd()} />
+
         {/* Google AdSense (keywordegg 와 동일 계정) */}
         <script
           async
@@ -87,9 +90,6 @@ export default function RootLayout({
         />
       </head>
       <body>
-        {/* 사이트 전역 구조화 데이터 — 모든 페이지에 실린다 */}
-        <JsonLd data={siteJsonLd()} />
-
         <SiteHeader />
         {children}
 

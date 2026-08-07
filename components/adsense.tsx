@@ -47,3 +47,20 @@ export function AdSense({
     />
   )
 }
+
+/** 본문 폭에 맞춘 가로 배너 자리. 목록 페이지 상·하단에 쓴다. */
+export function AdBanner({
+  slot,
+  className,
+}: {
+  slot: string
+  className?: string
+}) {
+  return (
+    <div
+      className={`mx-auto w-full max-w-6xl px-4 sm:px-6 ${className ?? ""}`}
+    >
+      <AdSense slot={slot} />
+    </div>
+  )
+}

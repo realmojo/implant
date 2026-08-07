@@ -3,6 +3,8 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ChevronRight } from "lucide-react"
 
+import { AdBanner } from "@/components/adsense"
+import { AD_SLOTS } from "@/lib/adsense"
 import { ClinicList } from "@/components/clinic-list"
 import { JsonLd } from "@/components/json-ld"
 import { breadcrumbJsonLd, collectionPageJsonLd } from "@/lib/jsonld"
@@ -69,7 +71,7 @@ export default async function SigunguPage({
   const path = regionPath(sido, sigungu)
 
   return (
-    <main className="min-h-svh bg-muted/30">
+    <>
       <JsonLd
         data={collectionPageJsonLd({
           path,
@@ -85,70 +87,78 @@ export default async function SigunguPage({
           { name: `${sido} ${sigungu}`, path },
         ])}
       />
-      <div className="border-b border-border bg-background">
-        <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-          <nav aria-label="위치" className="text-xs text-muted-foreground">
-            <ol className="flex flex-wrap items-center gap-1">
-              <li>
-                <Link href="/" className="hover:text-primary">
-                  홈
-                </Link>
-              </li>
-              <ChevronRight className="size-3" aria-hidden />
-              <li>
-                <Link href="/regions" className="hover:text-primary">
-                  지역별 임플란트치과
-                </Link>
-              </li>
-              <ChevronRight className="size-3" aria-hidden />
-              <li aria-current="page" className="font-medium text-foreground">
-                {sido} {sigungu}
-              </li>
-            </ol>
-          </nav>
 
-          <h1 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">
-            {sigungu} <span className="text-primary">임플란트 치과</span>
-          </h1>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            {sido} {sigungu}에 등록된 임플란트 치과{" "}
-            <strong className="font-semibold text-foreground">
-              {clinics.length.toLocaleString("ko-KR")}곳
-            </strong>
-            입니다. {shortSigungu(sigungu)} 임플란트 치과를 찾고 있다면
-            진료시간과 야간·주말 진료 여부를 확인해 보세요.
-          </p>
-        </div>
-      </div>
-
-      {dongs.length > 1 ? (
+      <main className="min-h-svh bg-muted/30">
         <div className="border-b border-border bg-background">
-          <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">
-            <h2 className="text-sm font-semibold text-muted-foreground">
-              {sigungu} 읍면동별 임플란트 치과
-            </h2>
-            <ul className="mt-3 flex flex-wrap gap-2">
-              {dongs.map((d) => (
-                <li key={d.dong}>
-                  <Link
-                    href={`${path}/${encodeURIComponent(d.dong)}`}
-                    className="inline-flex items-baseline gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-sm transition-colors hover:border-primary hover:text-primary"
-                  >
-                    {d.dong}
-                    <span className="text-xs text-muted-foreground tabular-nums">
-                      {d.cnt}
-                    </span>
+          <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+            <nav aria-label="위치" className="text-xs text-muted-foreground">
+              <ol className="flex flex-wrap items-center gap-1">
+                <li>
+                  <Link href="/" className="hover:text-primary">
+                    홈
                   </Link>
                 </li>
-              ))}
-            </ul>
+                <ChevronRight className="size-3" aria-hidden />
+                <li>
+                  <Link href="/regions" className="hover:text-primary">
+                    지역별 임플란트치과
+                  </Link>
+                </li>
+                <ChevronRight className="size-3" aria-hidden />
+                <li aria-current="page" className="font-medium text-foreground">
+                  {sido} {sigungu}
+                </li>
+              </ol>
+            </nav>
+
+            <h1 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">
+              {sigungu} <span className="text-primary">임플란트 치과</span>
+            </h1>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {sido} {sigungu}에 등록된 임플란트 치과{" "}
+              <strong className="font-semibold text-foreground">
+                {clinics.length.toLocaleString("ko-KR")}곳
+              </strong>
+              입니다. {shortSigungu(sigungu)} 임플란트 치과를 찾고 있다면
+              진료시간과 야간·주말 진료 여부를 확인해 보세요.
+            </p>
           </div>
         </div>
-      ) : null}
 
-      <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
-        <ClinicList clinics={clinics} />
-      </div>
-    </main>
+        {dongs.length > 1 ? (
+          <div className="border-b border-border bg-background">
+            <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">
+              <h2 className="text-sm font-semibold text-muted-foreground">
+                {sigungu} 읍면동별 임플란트 치과
+              </h2>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {dongs.map((d) => (
+                  <li key={d.dong}>
+                    <Link
+                      href={`${path}/${encodeURIComponent(d.dong)}`}
+                      className="inline-flex items-baseline gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-sm transition-colors hover:border-primary hover:text-primary"
+                    >
+                      {d.dong}
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {d.cnt}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ) : null}
+
+        <AdBanner slot={AD_SLOTS.top} className="pt-8" />
+
+        <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
+
+          <ClinicList clinics={clinics} />
+        </div>
+        <AdBanner slot={AD_SLOTS.bottom} className="pb-10" />
+
+      </main>
+    </>
   )
 }
