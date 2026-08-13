@@ -1,5 +1,10 @@
 import type { Clinic, ClinicWithSlug } from "@/lib/supabase"
-import { absoluteUrl, regionPath, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site"
+import {
+  absoluteUrl,
+  regionPath,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+} from "@/lib/site"
 
 /** 한글 요일 → schema.org DayOfWeek. '공휴일'은 PublicHolidays 로 대응된다. */
 const DAY_OF_WEEK: Record<string, string> = {
@@ -153,6 +158,47 @@ export function indexPageJsonLd({
       "@type": "ItemList",
       numberOfItems: itemCount,
     },
+  }
+}
+
+/**
+ * 가이드 문서 한 편.
+ *
+ * 의료 정보라 MedicalWebPage 를 쓴다. 다만 개별 치과에 대한 평가가 아니라
+ * 일반 정보라는 점을 lastReviewed 없이 명확히 두고, 저자는 사이트로 둔다.
+ */
+export function guideJsonLd(guide: {
+  slug: string
+  title: string
+  description: string
+}) {
+  const path = `/guide/${guide.slug}`
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "MedicalWebPage",
+    "@id": absoluteUrl(`${path}#article`),
+    url: absoluteUrl(path),
+    name: guide.title,
+    headline: guide.title,
+    description: guide.description,
+    inLanguage: "ko-KR",
+    isPartOf: { "@id": absoluteUrl("/#website") },
+    publisher: { "@id": absoluteUrl("/#organization") },
+    about: { "@type": "MedicalProcedure", name: "치과 임플란트" },
+  }
+}
+
+/** 가이드 하단 FAQ. 질문이 없으면 호출하지 않는다. */
+export function faqJsonLd(items: { q: string; a: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
   }
 }
 

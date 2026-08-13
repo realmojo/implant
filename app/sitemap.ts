@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next"
 
 import { absoluteUrl } from "@/lib/site"
+import { GUIDES } from "@/lib/guides"
 import {
   getAllDongCounts,
   getClinicCount,
@@ -46,6 +47,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/recommend", 0.8),
     ...FEATURES.map((f) => entry(`/${f}`, 0.8)),
 
+    // 임플란트 정보 가이드 — 상세 페이지에서 맥락에 맞게 링크된다
+    entry("/guide", 0.8),
+    ...GUIDES.map((g) => entry(`/guide/${g.slug}`, 0.7, "monthly")),
+
     // 시도 색인 — 지역별 + 조건별
     ...groups.map((g) => entry(`/regions/${g.sido}`, 0.7)),
     ...FEATURES.flatMap((f, i) =>
@@ -58,7 +63,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
 
     // 읍면동 목록 — "문래동 임플란트" 같은 검색어를 받는 페이지
-    ...dongs.map((d) => entry(`/regions/${d.sido}/${d.sigungu}/${d.dong}`, 0.6)),
+    ...dongs.map((d) =>
+      entry(`/regions/${d.sido}/${d.sigungu}/${d.dong}`, 0.6)
+    ),
 
     // 치과 상세
     ...slugs.map((slug) => entry(`/${slug}`, 0.5, "monthly")),

@@ -19,8 +19,14 @@ import { breadcrumbJsonLd, clinicCrumbs, dentistJsonLd } from "@/lib/jsonld"
 import {
   getClinicBySlug,
   getNearbyClinics,
+  getPlaceStats,
+  getRegionStats,
   type ClinicWithSlug,
 } from "@/lib/supabase"
+import { buildClinicSummary } from "@/lib/summary"
+import { buildReviewDigest } from "@/lib/review-stats"
+import { pickGuidesFor } from "@/lib/guides"
+import { baseDong } from "@/lib/region"
 
 export const revalidate = 3600
 
@@ -140,7 +146,14 @@ export default async function ClinicPage({
 
   if (!clinic) notFound()
 
-  const nearby = await getNearbyClinics(clinic)
+  const [nearby, region, placeStats] = await Promise.all([
+    getNearbyClinics(clinic),
+    getRegionStats(clinic),
+    getPlaceStats(clinic.id),
+  ])
+  const summary = buildClinicSummary(clinic, region, baseDong(clinic.dong))
+  const guides = pickGuidesFor(clinic)
+  const digest = buildReviewDigest(placeStats)
 
   const hasBadges =
     clinic.open_night ||
@@ -249,6 +262,42 @@ export default async function ClinicPage({
         </div>
 
         <div className="mx-auto w-full max-w-4xl space-y-8 px-4 py-8 sm:px-6">
+          {/* 데이터에서 뽑아낸 요약 — 치과마다 문장이 달라진다 */}
+          <section>
+            <h2 className="mb-3 text-lg font-bold tracking-tight">
+              {clinic.name} 진료 요약
+            </h2>
+
+            {summary.highlights.length > 0 ? (
+              <dl className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {summary.highlights.map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-xl border border-border bg-background px-4 py-3"
+                  >
+                    <dt className="text-xs text-muted-foreground">
+                      {item.label}
+                    </dt>
+                    <dd className="mt-1 font-semibold text-foreground tabular-nums">
+                      {item.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
+
+            <div className="space-y-3 rounded-xl border border-border bg-background px-5 py-5">
+              {summary.paragraphs.map((paragraph) => (
+                <p
+                  key={paragraph.slice(0, 24)}
+                  className="text-[15px] leading-[1.85] text-foreground/85"
+                >
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </section>
+
           <section>
             <h2 className="mb-3 text-lg font-bold tracking-tight">진료시간</h2>
             <HoursTable clinic={clinic} />
@@ -277,6 +326,76 @@ export default async function ClinicPage({
               ))}
             </dl>
           </section>
+
+          {/* 리뷰 원문이 아니라 집계에서 만들어낸 문장 */}
+          {digest ? (
+            <section>
+              <h2 className="mb-1 text-lg font-bold tracking-tight">
+                방문자 리뷰로 본 {clinic.name}
+              </h2>
+              <p className="mb-4 text-sm text-muted-foreground">
+                네이버 플레이스 리뷰에 남은 기록을 집계했습니다. 리뷰 내용
+                자체가 아니라 대기 시간·방문 방식 같은 항목의 분포입니다.
+              </p>
+
+              <div className="space-y-5 rounded-xl border border-border bg-background px-5 py-5">
+                {digest.paragraphs.map((paragraph) => (
+                  <p
+                    key={paragraph.slice(0, 24)}
+                    className="text-[15px] leading-[1.85] text-foreground/85"
+                  >
+                    {paragraph}
+                  </p>
+                ))}
+
+                {digest.waitBars.length > 0 ? (
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold text-foreground">
+                      대기 시간 분포
+                    </h3>
+                    <ul className="space-y-2">
+                      {digest.waitBars.map((bar) => (
+                        <li
+                          key={bar.label}
+                          className="flex items-center gap-3 text-sm"
+                        >
+                          <span className="w-20 shrink-0 text-muted-foreground">
+                            {bar.label}
+                          </span>
+                          <span
+                            className="h-2 rounded-full bg-primary"
+                            style={{ width: `${Math.max(bar.pct, 4)}%` }}
+                            aria-hidden
+                          />
+                          <span className="text-xs text-muted-foreground tabular-nums">
+                            {bar.count}건 ({bar.pct}%)
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+
+                {digest.conveniences.length > 0 ? (
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold text-foreground">
+                      등록된 편의시설
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {digest.conveniences.map((item) => (
+                        <span
+                          key={item}
+                          className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
 
           {clinic.tags.length > 0 ? (
             <section>
@@ -364,6 +483,35 @@ export default async function ClinicPage({
               </ul>
             </section>
           ) : null}
+
+          {/* 이 치과의 조건에 맞는 글만 고른다. 전 페이지에 같은 3개를 붙이지 않는다. */}
+          <section>
+            <h2 className="mb-1 text-lg font-bold tracking-tight">
+              가기 전에 알아두면 좋은 것
+            </h2>
+            <p className="mb-4 text-sm text-muted-foreground">
+              임플란트 비용과 진행 과정을 미리 확인해 보세요.
+            </p>
+
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {guides.map((guide) => (
+                <li key={guide.slug}>
+                  <Link
+                    href={`/guide/${guide.slug}`}
+                    className="group flex h-full flex-col gap-1.5 rounded-xl border border-border bg-background p-4 transition-all outline-none hover:border-primary hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  >
+                    <span className="flex items-start justify-between gap-2 font-semibold text-foreground group-hover:text-primary">
+                      {guide.short}
+                      <ChevronRight className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                    </span>
+                    <span className="text-sm leading-relaxed text-muted-foreground">
+                      {guide.description}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
 
           <Link
             href={regionHref}

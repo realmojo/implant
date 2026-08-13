@@ -3,6 +3,8 @@ import { createClient } from "@supabase/supabase-js"
 
 import { buildClinicSlug, dupKey, slugStartsWithSigungu } from "@/lib/slug"
 import { baseDong } from "@/lib/region"
+import type { RegionStats } from "@/lib/summary"
+import type { PlaceStats } from "@/lib/review-stats"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -237,6 +239,64 @@ export async function getNearbyClinics(
     .filter((c) => c.id !== clinic.id)
     .sort((a, b) => score(b) - score(a) || a.name.localeCompare(b.name, "ko"))
     .slice(0, limit)
+}
+
+/** 한 시군구의 집계 한 줄 (요약 문장의 '87곳 중 41곳' 근거) */
+export const getSigunguStats = cache(
+  async (sido: string, sigungu: string): Promise<SigunguCount | null> => {
+    const { data, error } = await supabase
+      .from("implant_sigungu_counts")
+      .select("sido, sigungu, cnt, sunday_cnt, holiday_cnt, night_cnt")
+      .eq("sido", sido)
+      .eq("sigungu", sigungu)
+      .maybeSingle()
+
+    if (error) throw error
+    return (data as SigunguCount | null) ?? null
+  }
+)
+
+/**
+ * 상세 페이지 요약에 쓸 지역 집계.
+ * 집계 뷰가 비어 있는 경우에도 페이지가 죽지 않도록 0 으로 채운다.
+ */
+export async function getRegionStats(
+  clinic: ClinicWithSlug
+): Promise<RegionStats> {
+  const [stats, dongs] = await Promise.all([
+    getSigunguStats(clinic.sido, clinic.sigungu),
+    getDongCountsBySigungu(clinic.sido, clinic.sigungu),
+  ])
+
+  const dong = baseDong(clinic.dong)
+  return {
+    sigunguTotal: stats?.cnt ?? 0,
+    sigunguNight: stats?.night_cnt ?? 0,
+    sigunguSunday: stats?.sunday_cnt ?? 0,
+    sigunguHoliday: stats?.holiday_cnt ?? 0,
+    dongTotal: dongs.find((d) => d.dong === dong)?.cnt ?? 0,
+  }
+}
+
+/**
+ * 네이버 플레이스에서 뽑아 둔 리뷰 통계.
+ *
+ * 아직 수집되지 않은 치과가 많아 없으면 null 이다. 이 값이 없다고
+ * 페이지가 실패하면 안 되므로 조회 오류도 null 로 흘린다.
+ */
+export async function getPlaceStats(
+  clinicId: number
+): Promise<PlaceStats | null> {
+  const { data, error } = await supabase
+    .from("implant_place_stats")
+    .select(
+      "place_id, review_total, image_review_count, sampled, wait, reserve, topics, conveniences"
+    )
+    .eq("clinic_id", clinicId)
+    .maybeSingle()
+
+  if (error) return null
+  return (data as PlaceStats | null) ?? null
 }
 
 /** 등록된 치과 총 개수 (사이트맵 분할 계산용) */

@@ -51,3 +51,8 @@ next-env.d.ts
 /remotion
 
 naver-indexing/*
+
+# 네이버 플레이스 수집 결과·로그 (Supabase 로 적재해서 쓴다)
+place_stats.jsonl
+naver_reviews.log
+dev.log

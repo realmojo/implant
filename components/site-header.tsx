@@ -13,6 +13,7 @@ export const navItems = [
   { label: "야간 진료", href: "/night" },
   { label: "공휴일 진료", href: "/holiday" },
   { label: "일요일 진료", href: "/sunday" },
+  { label: "정보 가이드", href: "/guide" },
 ]
 
 function ToothMark({ className }: { className?: string }) {
