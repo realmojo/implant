@@ -77,7 +77,8 @@ export default async function Page() {
 
         <div className="mt-6 grid gap-x-10 gap-y-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
-            <h1
+            {/* 홈의 h1 은 헤더 로고(사이트명)라 히어로 문구는 h2 로 둔다. */}
+            <h2
               className="dossier-reveal font-display text-[clamp(2.4rem,7vw,4.75rem)] leading-[1.08] font-black tracking-[-0.03em] text-balance"
               style={{ "--delay": "80ms" } as React.CSSProperties}
             >
@@ -86,7 +87,7 @@ export default async function Page() {
               <span className="text-primary">임플란트 치과</span>를
               <br />
               찾습니다
-            </h1>
+            </h2>
 
             <p
               className="dossier-reveal mt-7 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg"

@@ -27,24 +27,34 @@ function ToothMark({ className }: { className?: string }) {
   )
 }
 
+const SITE_TITLE = "임플란트 치과 찾기"
+
 export function SiteHeader() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+
+  /**
+   * 사이트명을 h1 으로 내보내는 건 홈에서만.
+   *
+   * 헤더는 layout 에 있어서 여기를 그냥 h1 으로 두면 상세·지역 페이지
+   * 19,000여 개가 전부 h1 을 두 개 갖게 되고, 그중 사이트명이 항상 먼저
+   * 온다. 각 페이지의 h1(치과명·지역명)이 그 페이지의 검색어라 그대로 둔다.
+   */
+  const isHome = pathname === "/"
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2 rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="flex shrink-0 items-center gap-2 rounded-md text-lg font-bold tracking-tight text-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
           onClick={() => setOpen(false)}
         >
           <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <ToothMark className="size-5" />
           </span>
-          <span className="text-lg font-bold tracking-tight text-foreground">
-            임플란트 치과 찾기
-          </span>
+          {/* 홈이 아니면 별도 요소 없이 링크 안에 글자만 둔다. */}
+          {isHome ? <h1>{SITE_TITLE}</h1> : SITE_TITLE}
         </Link>
 
         <nav aria-label="주요 메뉴" className="hidden lg:block">
