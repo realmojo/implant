@@ -82,6 +82,16 @@ export default function RootLayout({
         {/* 사이트 전역 구조화 데이터 — 모든 페이지의 <head> 에 실린다 */}
         <JsonLd data={siteJsonLd()} />
 
+        {/* 네이버 애널리틱스 (서치어드바이저 유입 확인용) */}
+        <script type="text/javascript" src="//wcs.pstatic.net/wcslog.js" />
+        <script
+          type="text/javascript"
+          dangerouslySetInnerHTML={{
+            __html:
+              'if(!wcs_add) var wcs_add = {}; wcs_add["wa"] = "159f7184d59b700"; if(window.wcs) {wcs_do();}',
+          }}
+        />
+
         {/* Google AdSense (keywordegg 와 동일 계정) */}
         <script
           async
