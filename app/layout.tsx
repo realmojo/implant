@@ -82,6 +82,26 @@ export default function RootLayout({
         {/* 사이트 전역 구조화 데이터 — 모든 페이지의 <head> 에 실린다 */}
         <JsonLd data={siteJsonLd()} />
 
+        {/* Google Analytics (keywordegg 계열 공통 측정 ID) */}
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-5BM9W5BC3P"
+        />
+        <script
+          id="google-analytics"
+          dangerouslySetInnerHTML={{
+            __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+              dataLayer.push(arguments);
+            }
+            gtag('js', new Date());
+
+            gtag('config', 'G-5BM9W5BC3P');
+          `,
+          }}
+        />
+
         {/* 네이버 애널리틱스 (서치어드바이저 유입 확인용) */}
         <script type="text/javascript" src="//wcs.pstatic.net/wcslog.js" />
         <script
